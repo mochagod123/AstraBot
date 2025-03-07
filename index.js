@@ -3,7 +3,7 @@ const deply = require('./deploy-commands.js');
 const fs = require("fs");
 const path = require("path");
 
-const { token } = require('./config.json');
+const { token } = require('./config/config.json');
 
 const client = new Client({ intents:[
     GatewayIntentBits.Guilds,
