@@ -1,12 +1,66 @@
 const { Client, Events, GatewayIntentBits } = require('discord.js');
+const deply = require('./deploy-commands.js');
+const fs = require("fs");
+const path = require("path");
 
 const { token } = require('./config.json');
 
-const client = new Client({ intents: [GatewayIntentBits.Guilds] });
+const client = new Client({ intents:[
+    GatewayIntentBits.Guilds,
+    GatewayIntentBits.MessageContent,
+    GatewayIntentBits.GuildMembers,
+    GatewayIntentBits.GuildMessages,
+    GatewayIntentBits.GuildPresences
+  ]});
 
 client.once(Events.ClientReady, client => {
 	console.log(`ログインしました！`);
 });
+
+const commands = [];
+const foldersPath = path.join(__dirname, 'module/slashcommands');
+const commandFolders = fs.readdirSync(foldersPath);
+
+for (const folder of commandFolders) {
+	const commandsPath = path.join(foldersPath, folder);
+	const commandFiles = fs.readdirSync(commandsPath).filter(file => file.endsWith('.js'));
+	for (const file of commandFiles) {
+		const filePath = path.join(commandsPath, file);
+		const command = require(filePath);
+		if ('data' in command && 'execute' in command) {
+			commands.push(command.data.toJSON());
+		} else {
+			console.log(`[WARNING] The command at ${filePath} is missing a required "data" or "execute" property.`);
+		}
+	}
+}
+
+function loadEvents(directory) {
+    const folders = fs.readdirSync(directory);
+
+    for (const folder of folders) {
+        const folderPath = path.join(directory, folder);
+        if (fs.statSync(folderPath).isDirectory()) {
+            const files = fs.readdirSync(folderPath).filter(file => file.endsWith(".js"));
+
+            for (const file of files) {
+                const eventPath = path.join(folderPath, file);
+                const event = require(eventPath);
+
+                if (typeof event !== "function") continue;
+
+                client.on(folder, event);
+
+                console.log(`eventをロードしました。 ${folder}/${file}`);
+            }
+        }
+    }
+}
+
+//イベントを読み込む
+loadEvents(path.join(__dirname, "module/events"));
+
+deply();
 
 //ログイン
 client.login(token);
