@@ -1,21 +1,21 @@
+const { InteractionType } = require('discord.js');
+
 module.exports = async (interaction) => {
-	if (!interaction.isChatInputCommand()) return;
+    if (!interaction.isCommand()) return;
 
-	const command = interaction.client.commands.get(interaction.commandName);
+    const command = interaction.client.commands.get(interaction.commandName);
+    if (!command) return;
 
-	if (!command) {
-		console.error(`No command matching ${interaction.commandName} was found.`);
-		return;
-	}
+    try {
+        await command.execute(interaction);
+    } catch (error) {
+        console.error(error);
+        const replyOptions = { content: 'エラーが発生しました。', ephemeral: true };
 
-	try {
-		await command.execute(interaction);
-	} catch (error) {
-		console.error(error);
-		if (interaction.replied || interaction.deferred) {
-			await interaction.followUp({ content: 'There was an error while executing this command!', flags: MessageFlags.Ephemeral });
-		} else {
-			await interaction.reply({ content: 'There was an error while executing this command!', flags: MessageFlags.Ephemeral });
-		}
-	}
+        if (interaction.replied || interaction.deferred) {
+            await interaction.followUp(replyOptions);
+        } else {
+            await interaction.reply(replyOptions);
+        }
+    }
 };

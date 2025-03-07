@@ -1,4 +1,4 @@
-const { Client, Events, GatewayIntentBits } = require('discord.js');
+const { Client, Events, GatewayIntentBits, Collection } = require('discord.js');
 const deply = require('./deploy-commands.js');
 const fs = require("fs");
 const path = require("path");
@@ -10,29 +10,26 @@ const client = new Client({ intents:[
     GatewayIntentBits.MessageContent,
     GatewayIntentBits.GuildMembers,
     GatewayIntentBits.GuildMessages,
-    GatewayIntentBits.GuildPresences
   ]});
 
 client.once(Events.ClientReady, client => {
 	console.log(`ログインしました！`);
 });
 
-const commands = [];
-const foldersPath = path.join(__dirname, 'module/slashcommands');
-const commandFolders = fs.readdirSync(foldersPath);
+client.commands = new Collection();
 
-for (const folder of commandFolders) {
-	const commandsPath = path.join(foldersPath, folder);
-	const commandFiles = fs.readdirSync(commandsPath).filter(file => file.endsWith('.js'));
-	for (const file of commandFiles) {
-		const filePath = path.join(commandsPath, file);
-		const command = require(filePath);
-		if ('data' in command && 'execute' in command) {
-			commands.push(command.data.toJSON());
-		} else {
-			console.log(`[WARNING] The command at ${filePath} is missing a required "data" or "execute" property.`);
-		}
-	}
+const commandsPath = path.join(__dirname, 'module', 'slashcommands');
+const commandFiles = fs.readdirSync(commandsPath).filter(file => file.endsWith('.js'));
+
+for (const file of commandFiles) {
+    const filePath = path.join(commandsPath, file);
+    const command = require(filePath);
+
+    if ('data' in command && 'execute' in command) {
+        client.commands.set(command.data.name, command);
+    } else {
+        console.warn(`⚠️ Warning: Command at ${filePath} is missing "data" or "execute".`);
+    }
 }
 
 function loadEvents(directory) {
