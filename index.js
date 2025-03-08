@@ -2,6 +2,11 @@ const { Client, Events, GatewayIntentBits, Collection } = require('discord.js');
 const deply = require('./deploy-commands.js');
 const fs = require("fs");
 const path = require("path");
+const sqlite3 = require("sqlite3");
+
+const db = new sqlite3.Database("config/database.db");
+
+db.run("create table if not exists admins(id)");
 
 const { token } = require('./config/config.json');
 
@@ -23,6 +28,7 @@ const commandFiles = fs.readdirSync(commandsPath).filter(file => file.endsWith('
 
 for (const file of commandFiles) {
     const filePath = path.join(commandsPath, file);
+    console.log(filePath)
     const command = require(filePath);
 
     if ('data' in command && 'execute' in command) {
