@@ -2,7 +2,7 @@ const { EmbedBuilder, Colors, PermissionFlagsBits } = require('discord.js');
 const random = require('../../lib/random');
 
 module.exports = {
-    name: "ban",
+    name: "random",
     async execute(interaction) {
         try {
             const rand = interaction.options.getString('選択する内容');
