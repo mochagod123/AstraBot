@@ -13,7 +13,7 @@ module.exports = {
           .setDescription("あなたの権限がありません。: BAN権限")
 
         if(!interaction.member.permissions.has(PermissionFlagsBits.BanMembers)) return await interaction.reply({
-            embed: embed
+            embeds: [embed]
         })
 
         const bot_embed = new EmbedBuilder()
@@ -23,7 +23,7 @@ module.exports = {
             .setDescription("Botの権限がありません。: BAN権限")
 
         if(!interaction.guild.members.me.permissionsIn(interaction.channel).has(PermissionFlagsBits.BanMembers)) return await interaction.reply({
-            embed: bot_embed
+            embeds: [bot_embed]
         })
 
         if(user.id === interaction.user.id) {
